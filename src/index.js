@@ -12,6 +12,7 @@ async function formatCommentsToJson(inputFilePath, outputFilePath) {
     let comment = {};
     let isCommentBlock = false;
 
+    let previousLine = '';
     for await (const line of rl) {
         if (line.startsWith('Video URL:')) {
             comment.video_url = line.split(' ')[2];
@@ -28,14 +29,15 @@ async function formatCommentsToJson(inputFilePath, outputFilePath) {
         } else if (isCommentBlock) {
             if (line.includes('youtube.com/channel/')) {
                 const parts = line.split('\n');
-                comment.username = parts[0];
-                comment.channel_url = parts[1];
+                comment.username = previousLine;
+                comment.channel_url = parts[0];
             } else if (line.startsWith('date:')) {
                 comment.date = line.split(' ')[1];
             } else if (line.trim() !== '') {
                 comment.comment = line;
             }
         }
+        previousLine = line;
     }
 
     const output = {
